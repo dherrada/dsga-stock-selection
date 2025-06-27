@@ -115,3 +115,44 @@ class Individual:
     def sign(bit: int) -> str:
         sign_map = {0: "-", 1: "+"}
         return sign_map.get(bit)
+
+def rule_decoder(rule):
+    if rule[0] == 0:
+        return None
+    
+    rule_conditions = []
+
+    if rule[1] == 1:
+        relation = Individual.relational_symbol(rule[2:4])
+        sign = Individual.sign(rule[4])
+        value = Individual.bit_to_decimal(rule[5:12]) / 10
+        if sign == '-':
+            value *= -1
+        comparison = comparison_map[relation]
+        rule_conditions.append(lambda row, c=comparison, v=value: c(row['percent_change_price'], v))
+
+    if rule[12] == 1:
+        relation = Individual.relational_symbol(rule[13:15])
+        sign = Individual.sign(rule[15])
+        value = Individual.bit_to_decimal(rule[16:23])
+        if sign == '-':
+            value *= -1
+        comparison = comparison_map[relation]
+        rule_conditions.append(lambda row, c=comparison, v=value: c(row['percent_change_volume_over_last_wk'], v))
+
+    if rule[23] == 1:
+        relation = Individual.relational_symbol(rule[24:26])
+        value = Individual.bit_to_decimal(rule[26:33])
+        comparison = comparison_map[relation]
+        rule_conditions.append(lambda row, c=comparison, v=value: c(row['days_to_next_dividend'], v))
+
+    if rule[33] == 1:
+        relation = Individual.relational_symbol(rule[34:36])
+        value = Individual.bit_to_decimal(rule[36:43]) / 100
+        comparison = comparison_map[relation]
+        rule_conditions.append(lambda row, c=comparison, v=value: c(row['percent_return_next_dividend'], v))
+
+    def rule_function(row):
+        return all(condition(row) for condition in rule_conditions)
+
+    return rule_function
