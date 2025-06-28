@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from src.data_loader import load_and_clean_data
 from src.dsga import DSGA
@@ -70,6 +71,8 @@ def main():
     
     quarterly_ror = results_df['weekly_return'].sum()
     print(f'Rate of return for Q2: {quarterly_ror:.2f}%')
+
+    os.makedirs("results", exist_ok=True)
     
     results_df.to_csv("results/q2_stock_results.csv", index=False)
     with open("results/q2_summary.txt", "w") as f:
