@@ -1,7 +1,7 @@
 import pandas as pd
 from src.data_loader import load_and_clean_data
 from src.dsga import DSGA
-from src.individual import Individual
+from src.individual import Individual, rule_decoder
 from src.utils import comparison_map
 import pickle
 
