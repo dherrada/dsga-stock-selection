@@ -10,7 +10,7 @@ This project is a reproduction of the pipeline described in the 2013 research pa
 - Applies rule-based filters to predict optimal stocks for each week in Q2 2011.
 - Evaluates predictions based on weekly returns and compares performance to the paper’s reported outcomes.
 
-  ## What this project offers
+## What this project offers
 
 - A look at applying evolutionary algorithms to financial time series data.
 - A complete implementation of a specialized algorithm from academic research.
