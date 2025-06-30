@@ -21,7 +21,7 @@ This project is a reproduction of the pipeline described in the 2013 research pa
 Clone the repo and install dependencies:
 
 ```bash
-git clone git@github.com:your-username/dsga-stock-selection.git
+git clone git@github.com:dherrada/dsga-stock-selection.git
 cd dsga-stock-selection
 pip install -r requirements.txt
 ```
