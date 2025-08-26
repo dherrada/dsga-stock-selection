@@ -5,6 +5,11 @@ from typing import List, Set, Tuple
 from src.individual import Individual
 
 class DSGA:
+    """
+    - Maintains "species" via a distance threshold so seeds are diverse.
+    - 'Tabu list' stores converged individuals with their selected (stock, week) sets
+        to affect penalty in subsequent generations.
+    """
     def __init__(self, N: int, NG: int, M: float, IS: float, SD: float, RLC: int, CL: int, W: int, stock_data: pd.DataFrame) -> None:
         self.pop_size = N
         self.num_generations = NG
@@ -41,6 +46,7 @@ class DSGA:
 
             selected_seeds = self.seed_selection(self.population)
 
+            # Convergence detection: if ≥ CL identical genomes, mark as converged and add to tabu.
             converged_inds = self.check_convergence(self.population)
             for bitstring in converged_inds:
                 duplicate_inds = [ind for ind in self.population if ''.join(map(str, ind.individual)) == bitstring]
@@ -64,6 +70,7 @@ class DSGA:
         return selected_seeds
     
     def parent_selection(self, population: list[Individual], size: int) -> list[Individual]:
+        # Tournament selection
         parents = []
         for _ in range(len(population)):
             possible_parents = np.random.choice(population, size, replace=False)
@@ -73,6 +80,12 @@ class DSGA:
 
     @staticmethod
     def crossover(parents: list[Individual]) -> Individual:
+        """
+        One-point style crossover on a subset of indices.
+        - Randomly choose base and other parent (50/50).
+        - For each index in crossover_idx where parents differ, copy other’s bit with p=0.3.
+        Returns a new Individual with the mixed genome.
+        """
         p1, p2 = np.random.choice(parents, 2, replace=True)
 
         if np.random.rand() < 0.5:
@@ -93,6 +106,9 @@ class DSGA:
         return child
 
     def mutate(self, individual: Individual) -> None:
+        """
+        Bit-flip mutation applied independently to each bit with probability = mutation_rate.
+        """
         for idx in range(len(individual.individual)):
             if np.random.rand() < self.mutation_rate:
                 individual.individual[idx] = 1 - individual.individual[idx]
@@ -104,6 +120,9 @@ class DSGA:
         return converged_inds
 
     def update_tabu_list(self, selected_seeds: list[Individual]) -> None:
+        """
+        Add new seeds to tabu_list if their genome (bitstring) is not already present.
+        """
         current_bitstrings = [''.join(map(str, ind.individual)) for ind, _ in self.tabu_list]
         for seed in selected_seeds:
             seed_bitstring = ''.join(map(str, seed.individual))
