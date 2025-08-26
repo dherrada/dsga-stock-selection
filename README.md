@@ -18,7 +18,7 @@ This project is a reproduction of the pipeline described in the 2013 research pa
 
 ## Setup
 
-Clone the repo and install dependencies:
+Clone the repo and install dependencies with SSH key:
 
 ```bash
 git clone git@github.com:dherrada/dsga-stock-selection.git
