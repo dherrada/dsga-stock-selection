@@ -4,6 +4,15 @@ from typing import List, Set, Tuple
 from src.utils import comparison_map, sign_map
 
 class Individual:
+    """
+    A single candidate solution encoded as a 43-bit rule.
+    Bit layout:
+      [0]     : buy-rule switch (1=enabled, 0=disabled → invert later)
+      [1:11] : price change rule (on/off, relation (2b), sign(1b), magnitude(7b))
+      [12:22]: volume change rule (on/off, relation (2b), sign(1b), magnitude(7b))
+      [23:32]: days-to-next-dividend rule (on/off, relation (2b), magnitude(7b))
+      [33:42]: next-dividend return rule (on/off, relation (2b), magnitude(7b))
+    """
     def __init__(self) -> None:
         self.individual = self.random_init()
 
@@ -35,6 +44,7 @@ class Individual:
         if self.individual[0] == 0:  
             fitness *= -1
 
+        # Diversity penalty against tabu individuals with similar selections.
         for stored_individual, stored_sw_pair in tabu_list:
             penalty_adjustment += 1 - ((self.distance(self.get_sw_pairs(stock_data), stored_sw_pair)) / 0.1)
         
@@ -44,6 +54,13 @@ class Individual:
         self.shared_fitness = fitness / penalty_adjustment
 
     def get_sw_pairs(self, stock_data: pd.DataFrame) -> set[tuple[str, str]]:
+        """
+        Decode the chromosome into a set of (stock, date) pairs that pass all active rule filters (on/off).
+        For each row in stock_data:
+          - Optionally test price, volume, dividend-days, and dividend-return conditions.
+          - If a condition is 'included' (bit==1), we apply the comparison operator to the feature and threshold.
+          - Only rows passing all included conditions are selected.
+        """
         sw_pairs = set()
 
         for index, row in stock_data.iterrows():
@@ -117,6 +134,9 @@ class Individual:
         return sign_map.get(bit)
 
 def rule_decoder(rule):
+    """
+    Convert a 43-bit individual into a Python function that, given a row, returns True if the row satisfies the rule.
+    """
     if rule[0] == 0:
         return None
     
